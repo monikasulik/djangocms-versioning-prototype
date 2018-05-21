@@ -22,3 +22,4 @@ django-sekizai>=0.9
 six
 git+git://github.com/czpython/djangocms-tools#egg=djangocms-tools
 psycopg2
+factory_boy

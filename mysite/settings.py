@@ -148,6 +148,7 @@ INSTALLED_APPS = (
     'djangocms_video',
     'djangocms_tools',
     'mysite',
+    'reverting',
 )
 
 LANGUAGES = [
