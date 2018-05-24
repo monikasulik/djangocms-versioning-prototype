@@ -18,18 +18,26 @@ class TitleVersioning(Versioning):
 
     def serialize(self, title):
         to_serialize = [title]
-        to_serialize.extend(title.page.placeholders.all())
+        for placeholder in title.page.placeholders.all():
+            to_serialize.append(placeholder)
+            for plugin in placeholder.cmsplugin_set.all():
+                to_serialize.append(plugin)
+                if plugin.plugin_type == 'TextPlugin':
+                    to_serialize.append(plugin.djangocms_text_ckeditor_text)
         return serialize('json', to_serialize)
 
     def revert(self, revision):
         # TODO: Investigate the m2m attribute on the deserialized object
+        # TODO: What if title removed? What if page removed?
         placeholders = []
 
         for obj in deserialize("json", revision.serialized_data):
-            obj.object.save()
             if obj.object.__class__.__name__ == 'Title':
                 title = obj.object
+                title.page.placeholders.all().delete()
             elif obj.object.__class__.__name__ == 'Placeholder':
                 placeholders.append(obj.object)
-        title.page.placeholders.clear()
+            elif obj.object.__class__.__name__ in ['CMSPlugin', 'Text']:
+                obj.object.pk = None
+            obj.object.save()
         title.page.placeholders.add(*placeholders)
